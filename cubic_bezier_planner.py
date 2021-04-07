@@ -33,7 +33,7 @@ def calc_4points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
 
     return path, control_points
 
-def calc_6points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
+def calc_6points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset_1, offset_2):
     """
     Compute control points and path given start and end position.
     :param sx: (float) x-coordinate of the starting point
@@ -42,17 +42,21 @@ def calc_6points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
     :param ex: (float) x-coordinate of the ending point
     :param ey: (float) y-coordinate of the ending point
     :param eyaw: (float) yaw angle at the end
-    :param offset: (float)
+    :param offset_1: (float)
     :return: (numpy array, numpy array)
     """
 
-    dist = np.hypot(sx - ex, sy - ey) * offset
+    dist_1 = np.hypot(sx - ex, sy - ey) * offset_1
+    dist_2 = np.hypot(sx - ex, sy - ey) * offset_2
+    tsyaw = syaw + np.pi * 0.5
+    teyaw = eyaw + np.pi * 0.5
+
     control_points = np.array(
         [[sx, sy],
-         [sx + 0.25 * dist * np.cos(syaw), sy + 0.25 * dist * np.sin(syaw)],
-         [sx + 0.40 * dist * np.cos(syaw), sy + 0.40 * dist * np.sin(syaw)],
-         [ex - 0.40 * dist * np.cos(eyaw), ey - 0.40 * dist * np.sin(eyaw)],
-         [ex - 0.25 * dist * np.cos(eyaw), ey - 0.25 * dist * np.sin(eyaw)],
+         [sx + 0.25 * dist_1 * np.cos(syaw), sy + 0.25 * dist_1 * np.sin(syaw)],
+         [sx + 0.50 * dist_1 * np.cos(syaw) + 0.5 * dist_2 * np.cos(tsyaw), sy + 0.50 * dist_1 * np.sin(syaw) + 0.5 * dist_2 * np.sin(tsyaw)],
+         [ex - 0.50 * dist_1 * np.cos(eyaw) + 0.5 * dist_2 * np.cos(teyaw), ey - 0.50 * dist_1 * np.sin(eyaw) + 0.5 * dist_2 * np.sin(teyaw)],
+         [ex - 0.25 * dist_1 * np.cos(eyaw), ey - 0.25 * dist_1 * np.sin(eyaw)],
          [ex, ey]])
 
     path = calc_bezier_path(control_points, n_points=170)
