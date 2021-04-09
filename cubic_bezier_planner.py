@@ -55,14 +55,14 @@ def calc_5ord_bezier_path(sx, sy, syaw, sdd, ex, ey, eyaw, edd, offset):
     #create vectors of first and second derivatives
     sd = [dist_1 * np.cos(syaw), dist_1 * np.sin(syaw)]
     sd = np.multiply(sd, 0.2)
-    # sdd = np.multiply(sdd, dist_1)
-    sdd = np.multiply(sdd, 1000)
+    sdd = np.multiply(sdd, dist_1)
+    sdd = np.multiply(sdd, 150)
     # print("start: ", sdd)
 
     ed = [dist_1 * np.cos(eyaw), dist_1 * np.sin(eyaw)]
     ed = np.multiply(ed, 0.2)
-    #edd = np.multiply(edd, dist_1)
-    edd = np.multiply(edd, 1000)
+    edd = np.multiply(edd, dist_1)
+    edd = np.multiply(edd, 150)
     # print("end: ", edd)
 
     # start cotrol points
