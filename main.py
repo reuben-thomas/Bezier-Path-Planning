@@ -31,7 +31,7 @@ class Spline:
         self.right_bound = Path(rax, ray, None, None)
 
         # default unoptimized cubic bezier path to initialize curvature
-        bx, by, _ = self.cubic_bezier_path(ax, ay)
+        bx, by, _, _ = self.cubic_bezier_path(ax, ay)
         byaw, bk = self.calc_yaw_curvature(bx, by)
         self.default_path = Path(bx, by, byaw, bk)
 
@@ -82,29 +82,28 @@ class Spline:
 
         dyaw, _ = self.calc_yaw_curvature(ax, ay)
         
-        cx = []
-        cy = []
+        # control point and path array
+        cx, cy, ctr_pt_x, ctr_pt_y = [], [], [], []
+
         ayaw = dyaw.copy()
 
         for n in range(1, len(ax)-1):
             yaw = 0.5*(dyaw[n] + dyaw[n-1])
             ayaw[n] = yaw
 
-        last_ax = ax[0]
-        last_ay = ay[0]
-        last_ayaw = ayaw[0]
-
         # for n waypoints, there are n-1 bezier curves
         for i in range(len(ax)-1):
 
-            path, ctr_points = calc_4points_bezier_path(last_ax, last_ay, ayaw[i], ax[i+1], ay[i+1], ayaw[i+1], 2.0)
-            cx = np.concatenate((cx, path.T[0][:-2]))
-            cy = np.concatenate((cy, path.T[1][:-2]))
+            path, points = calc_4points_bezier_path(ax[i], ay[i], ayaw[i], ax[i+1], ay[i+1], ayaw[i+1], 2.0)
+            cx = np.concatenate((cx, path.T[0][:-1]))
+            cy = np.concatenate((cy, path.T[1][:-1]))
             cyaw, k = self.calc_yaw_curvature(cx, cy)
-            last_ax = path.T[0][-1]
-            last_ay = path.T[1][-1]
 
-        return cx, cy, ctr_points
+            for p in points:
+                ctr_pt_x.append( p[0] )
+                ctr_pt_y.append( p[1] )
+
+        return cx, cy, ctr_pt_x, ctr_pt_y
 
     # Approximated quintic bezier path with curvature continuity
     def quintic_bezier_path(self, ax, ay, offset_1, offset_2):
@@ -112,10 +111,7 @@ class Spline:
         dyaw, _ = self.calc_yaw_curvature(ax, ay)
         
         # control point and path array
-        cx = []
-        cy = []
-        ctr_pt_x = []
-        ctr_pt_y = []
+        cx, cy, ctr_pt_x, ctr_pt_y = [], [], [], []
 
         ayaw = dyaw.copy()
 
@@ -123,19 +119,13 @@ class Spline:
             yaw = 0.5*(dyaw[n] + dyaw[n-1])
             ayaw[n] = yaw
 
-        last_ax = ax[0]
-        last_ay = ay[0]
-        last_ayaw = ayaw[0]
-
         # for n waypoints, there are n-1 bezier curves
         for i in range(len(ax)-1):
 
-            path, points = calc_6points_bezier_path(last_ax, last_ay, ayaw[i], ax[i+1], ay[i+1], ayaw[i+1], offset_1[i], offset_2[i])
-            cx = np.concatenate((cx, path.T[0][:-2]))
-            cy = np.concatenate((cy, path.T[1][:-2]))
+            path, points = calc_6points_bezier_path(ax[i], ay[i], ayaw[i], ax[i+1], ay[i+1], ayaw[i+1], offset_1[i], offset_2[i])
+            cx = np.concatenate((cx, path.T[0][:-1]))
+            cy = np.concatenate((cy, path.T[1][:-1]))
             cyaw, k = self.calc_yaw_curvature(cx, cy)
-            last_ax = path.T[0][-1]
-            last_ay = path.T[1][-1]
             
             for p in points:
                 ctr_pt_x.append( p[0] )
@@ -153,7 +143,7 @@ class Spline:
             ax[n+1] -= deviation[n]*np.sin(self.waypoints.yaw[n+1])
             ay[n+1] += deviation[n]*np.cos(self.waypoints.yaw[n+1])
 
-        bx, by, _ = self.cubic_bezier_path(ax, ay)
+        bx, by, _, _ = self.cubic_bezier_path(ax, ay)
         yaw, k = self.calc_yaw_curvature(bx, by)
 
         # cost of curvature continuity
@@ -247,7 +237,7 @@ class Spline:
                 ax[n+1] -= deviation[n]*np.sin(self.waypoints.yaw[n+1])
                 ay[n+1] += deviation[n]*np.cos(self.waypoints.yaw[n+1])
 
-            x, y, _ = self.cubic_bezier_path(ax, ay)
+            x, y, _, _ = self.cubic_bezier_path(ax, ay)
             yaw, k = self.calc_yaw_curvature(x, y)
             self.optimized_path = Path(x, y, yaw, k)
 
