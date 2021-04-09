@@ -33,6 +33,64 @@ def calc_4points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset):
 
     return path, control_points
 
+# creating quintic bezier path controlling position, yaw, curvature at start and end points
+# method proposed by /http://www2.informatik.uni-freiburg.de/~lau/students/Sprunk2008.pdf
+def calc_6points_quintic_bezier_path(sx, sy, syaw, sk, ex, ey, eyaw, ek, offset):
+    """
+    Compute control points and path given start and end position.
+    :param sx: (float) x-coordinate of the starting point
+    :param sy: (float) y-coordinate of the starting point
+    :param syaw: (float) yaw angle at start
+    :param ex: (float) x-coordinate of the ending point
+    :param ey: (float) y-coordinate of the ending point
+    :param eyaw: (float) yaw angle at the end
+    :param offset_1: (float)
+    :return: (numpy array, numpy array)
+    """
+
+    dist_1 = np.hypot(sx - ex, sy - ey) * offset
+
+    #create vectors of first and second derivatives
+    sd = [dist_1 * np.cos(syaw), dist_1 * np.sin(syaw)]
+    sd = np.multiply(sd, 0.2)
+
+    sdd = [sk * np.cos(syaw), sk * np.sin(syaw)]
+    sdd = np.multiply(sdd, 0.05)
+
+    ed = [dist_1 * np.cos(eyaw), dist_1 * np.sin(eyaw)]
+    ed = np.multiply(ed, 0.2)
+
+    edd = [ek * np.cos(eyaw), ek * np.sin(eyaw)]
+    edd = np.multiply(edd, 0.05)
+
+    # start cotrol points
+    p0 = [sx, sy]
+    p1 = np.add(p0, sd)
+    p2 = np.subtract(2*p1, p0)
+    p2 = np.add(p2, sdd)
+
+    # end control points
+    p5 = [ex, ey]
+    p4 = np.subtract(p5, ed)
+    p3 = np.subtract(2*p4, p5)
+    p3 = np.add(p3, sdd)    
+
+    control_points = np.array((p0, p1, p2, p3, p4, p5))
+
+    """
+    control_points = np.array(
+        [[sx, sy],
+         [sx + 0.25 * dist_1 * np.cos(syaw), sy + 0.25 * dist_1 * np.sin(syaw)],
+         [sx + 0.50 * dist_1 * np.cos(syaw), sy + 0.50 * dist_1 * np.sin(syaw)],
+         [ex - 0.50 * dist_1 * np.cos(eyaw), ey - 0.50 * dist_1 * np.sin(eyaw)],
+         [ex - 0.25 * dist_1 * np.cos(eyaw), ey - 0.25 * dist_1 * np.sin(eyaw)],
+         [ex, ey]])
+    """
+
+    path = calc_bezier_path(control_points, n_points=170)
+
+    return path, control_points
+
 def calc_6points_bezier_path(sx, sy, syaw, ex, ey, eyaw, offset_1, offset_2):
     """
     Compute control points and path given start and end position.
