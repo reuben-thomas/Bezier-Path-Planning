@@ -218,6 +218,7 @@ class Spline:
         deviation_cost = 1.0 * np.mean(absolute_dev)
 
         distance_cost = 0.5 * self.calc_path_dist(bx, by)
+        print(distance_cost)
 
         return curvature_cost + deviation_cost + distance_cost + continuity_cost
 
@@ -246,6 +247,7 @@ class Spline:
 
         # cost of distance
         # distance_cost = 0.5 * self.calc_path_dist(bx, by)
+        print(self.calc_path_dist(bx,by))
 
         # curvature cost
         absolute_k = np.absolute(k)
@@ -342,12 +344,12 @@ class Spline:
 
 def main():
     # define input path
-    ax = [0.0, 2.3, 6.25, 8.6, 8.2, 5.3, 2.6]
-    ay = [0.0, 7.16, 13.68, 22.3, 30.64, 39.6, 50.4]
+    ay = [0.0, 2.3, 6.25, 8.6, 8.2, 5.3, 2.6]
+    ax = [0.0, 7.16, 13.68, 22.3, 30.64, 39.6, 50.4]
     boundary = 2.5
 
     spline = Spline(ax, ay, boundary)
-    # spline.optimize_min_quintic()
+    spline.optimize_min_quintic()
 
     # Path plot
     plt.subplots(1)
